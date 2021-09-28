@@ -36,6 +36,7 @@
 #include <string.h>
 #include <windowsx.h>
 #include <shellapi.h>
+#include <uxtheme.h>
 
 // Returns the window style for the specified window
 //
@@ -529,14 +530,19 @@ static void maximizeWindowManually(_GLFWwindow* window)
 //
 static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    static RECT border_thickness = { 4, 4, 4, 4 };
+    BOOL hasThickFrame = GetWindowLongPtr(hWnd, GWL_STYLE) & WS_THICKFRAME;
+
     _GLFWwindow* window = GetPropW(hWnd, L"GLFW");
     if (!window)
     {
-        if (uMsg == WM_NCCREATE)
+        switch (uMsg)
         {
-            if (_glfwIsWindows10Version1607OrGreaterWin32())
+        case WM_NCCREATE:
+        {
+            if (_glfwIsWindows10AnniversaryUpdateOrGreaterWin32())
             {
-                const CREATESTRUCTW* cs = (const CREATESTRUCTW*) lParam;
+                const CREATESTRUCTW* cs = (const CREATESTRUCTW*)lParam;
                 const _GLFWwndconfig* wndconfig = cs->lpCreateParams;
 
                 // On per-monitor DPI aware V1 systems, only enable
@@ -546,6 +552,68 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
                 if (wndconfig && wndconfig->scaleToMonitor)
                     EnableNonClientDpiScaling(hWnd);
             }
+
+            break;
+        }
+
+        case WM_DISPLAYCHANGE:
+            _glfwPollMonitorsWin32();
+            break;
+
+        case WM_DEVICECHANGE:
+        {
+            if (!_glfw.joysticksInitialized)
+                break;
+
+            if (wParam == DBT_DEVICEARRIVAL)
+            {
+                DEV_BROADCAST_HDR* dbh = (DEV_BROADCAST_HDR*)lParam;
+                if (dbh && dbh->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE)
+                    _glfwDetectJoystickConnectionWin32();
+            }
+            else if (wParam == DBT_DEVICEREMOVECOMPLETE)
+            {
+                DEV_BROADCAST_HDR* dbh = (DEV_BROADCAST_HDR*)lParam;
+                if (dbh && dbh->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE)
+                    _glfwDetectJoystickDisconnectionWin32();
+            }
+
+            break;
+        }
+
+        case WM_CREATE:
+        {
+            if (_glfw.hints.window.titlebar)
+                break;
+
+            if (hasThickFrame)
+            {
+                RECT size_rect;
+                GetWindowRect(hWnd, &size_rect);
+
+                // Inform the application of the frame change to force redrawing with the new
+                // client area that is extended into the title bar
+                SetWindowPos(
+                    hWnd, NULL,
+                    size_rect.left, size_rect.top,
+                    size_rect.right - size_rect.left, size_rect.bottom - size_rect.top,
+                    SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE
+                );
+                break;
+            }
+
+            break;
+        }
+
+        case WM_ACTIVATE:
+        {
+            if (_glfw.hints.window.titlebar)
+                break;
+
+            RECT title_bar_rect = { 0 };
+            InvalidateRect(hWnd, &title_bar_rect, FALSE);
+            break;
+        }
         }
 
         return DefWindowProcW(hWnd, uMsg, wParam, lParam);
@@ -997,6 +1065,16 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
             break;
         }
 
+        case  WM_NCCALCSIZE:
+        {
+            if (window->titlebar)
+                break;
+
+            if (lParam)
+                return 0;
+
+            break;
+        }
         case WM_SIZE:
         {
             const int width = LOWORD(lParam);
@@ -1241,6 +1319,61 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
             DragFinish(drop);
             return 0;
+        }
+
+        case WM_ACTIVATE:
+        {
+            if (window->titlebar)
+                break;
+
+            // Extend the frame into the client area.
+            MARGINS margins = { 0 };
+            auto hr = DwmExtendFrameIntoClientArea(hWnd, &margins);
+
+            if (!SUCCEEDED(hr))
+            {
+                // Handle the error.
+            }
+
+            break;
+        }
+        case WM_NCHITTEST:
+        {
+            if (window->titlebar)
+                break;
+
+            POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+            ScreenToClient(hWnd, &pt);
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+
+            int titlebarHittest = 0;
+            _glfwInputTitleBarHitTest(window, pt.x, pt.y, &titlebarHittest);
+
+            if (titlebarHittest)
+            {
+                return HTCAPTION;
+            }
+            else
+            {
+                enum { left = 1, top = 2, right = 4, bottom = 8 };
+                int hit = 0;
+                if (pt.x < border_thickness.left)               hit |= left;
+                if (pt.x > rc.right - border_thickness.right)   hit |= right;
+                if (pt.y < border_thickness.top)                hit |= top;
+                if (pt.y > rc.bottom - border_thickness.bottom) hit |= bottom;
+
+                if (hit & top && hit & left)        return HTTOPLEFT;
+                if (hit & top && hit & right)       return HTTOPRIGHT;
+                if (hit & bottom && hit & left)     return HTBOTTOMLEFT;
+                if (hit & bottom && hit & right)    return HTBOTTOMRIGHT;
+                if (hit & left)                     return HTLEFT;
+                if (hit & top)                      return HTTOP;
+                if (hit & right)                    return HTRIGHT;
+                if (hit & bottom)                   return HTBOTTOM;
+
+                return HTCLIENT;
+            }
         }
     }
 
@@ -1937,6 +2070,18 @@ void _glfwSetWindowResizableWin32(_GLFWwindow* window, GLFWbool enabled)
 }
 
 void _glfwSetWindowDecoratedWin32(_GLFWwindow* window, GLFWbool enabled)
+{
+    updateWindowStyles(window);
+}
+
+void _glfwSetWindowFloatingWin32(_GLFWwindow* window, GLFWbool enabled)
+{
+    const HWND after = enabled ? HWND_TOPMOST : HWND_NOTOPMOST;
+    SetWindowPos(window->win32.handle, after, 0, 0, 0, 0,
+        SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+}
+
+void _glfwPlatformSetWindowTitlebar(_GLFWwindow* window, GLFWbool enabled)
 {
     updateWindowStyles(window);
 }

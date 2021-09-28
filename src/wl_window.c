@@ -2439,6 +2439,24 @@ void _glfwSetWindowResizableWayland(_GLFWwindow* window, GLFWbool enabled)
 
 void _glfwSetWindowDecoratedWayland(_GLFWwindow* window, GLFWbool enabled)
 {
+    if (!window->monitor)
+    {
+        if (enabled)
+            createDecorations(window);
+        else
+            destroyDecorations(window);
+    }
+}
+
+void _glfwPlatformSetWindowTitlebar(_GLFWwindow* window, GLFWbool enabled)
+{
+    // TODO
+    _glfwInputError(GLFW_PLATFORM_ERROR,
+        "Wayland: Window attribute setting not implemented yet");
+}
+
+void _glfwPlatformSetWindowFloating(_GLFWwindow* window, GLFWbool enabled)
+{
     if (window->wl.libdecor.frame)
     {
         libdecor_frame_set_visibility(window->wl.libdecor.frame, enabled);

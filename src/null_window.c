@@ -426,6 +426,129 @@ GLFWbool _glfwRawMouseMotionSupportedNull(void)
 {
     return GLFW_TRUE;
 }
+void _glfwPlatformMaximizeWindow(_GLFWwindow* window)
+{
+}
+
+int _glfwPlatformWindowMaximized(_GLFWwindow* window)
+{
+    return GLFW_FALSE;
+}
+
+int _glfwPlatformWindowHovered(_GLFWwindow* window)
+{
+    return GLFW_FALSE;
+}
+
+int _glfwPlatformFramebufferTransparent(_GLFWwindow* window)
+{
+    return GLFW_FALSE;
+}
+
+void _glfwPlatformSetWindowResizable(_GLFWwindow* window, GLFWbool enabled)
+{
+}
+
+void _glfwPlatformSetWindowDecorated(_GLFWwindow* window, GLFWbool enabled)
+{
+}
+
+void _glfwPlatformSetWindowTitlebar(_GLFWwindow* window, GLFWbool enabled)
+{
+}
+
+void _glfwPlatformSetWindowFloating(_GLFWwindow* window, GLFWbool enabled)
+{
+}
+
+float _glfwPlatformGetWindowOpacity(_GLFWwindow* window)
+{
+    return 1.f;
+}
+
+void _glfwPlatformSetWindowOpacity(_GLFWwindow* window, float opacity)
+{
+}
+
+void _glfwPlatformSetRawMouseMotion(_GLFWwindow *window, GLFWbool enabled)
+{
+}
+
+GLFWbool _glfwPlatformRawMouseMotionSupported(void)
+{
+    return GLFW_FALSE;
+}
+
+void _glfwPlatformShowWindow(_GLFWwindow* window)
+{
+}
+
+
+void _glfwPlatformRequestWindowAttention(_GLFWwindow* window)
+{
+}
+
+void _glfwPlatformUnhideWindow(_GLFWwindow* window)
+{
+}
+
+void _glfwPlatformHideWindow(_GLFWwindow* window)
+{
+}
+
+void _glfwPlatformFocusWindow(_GLFWwindow* window)
+{
+}
+
+int _glfwPlatformWindowFocused(_GLFWwindow* window)
+{
+    return GLFW_FALSE;
+}
+
+int _glfwPlatformWindowIconified(_GLFWwindow* window)
+{
+    return GLFW_FALSE;
+}
+
+int _glfwPlatformWindowVisible(_GLFWwindow* window)
+{
+    return GLFW_FALSE;
+}
+
+void _glfwPlatformPollEvents(void)
+{
+}
+
+void _glfwPlatformWaitEvents(void)
+{
+}
+
+void _glfwPlatformWaitEventsTimeout(double timeout)
+{
+}
+
+void _glfwPlatformPostEmptyEvent(void)
+{
+}
+
+void _glfwPlatformGetCursorPos(_GLFWwindow* window, double* xpos, double* ypos)
+{
+}
+
+void _glfwPlatformSetCursorPos(_GLFWwindow* window, double x, double y)
+{
+}
+
+void _glfwPlatformSetCursorMode(_GLFWwindow* window, int mode)
+{
+}
+
+int _glfwPlatformCreateCursor(_GLFWcursor* cursor,
+                              const GLFWimage* image,
+                              int xhot, int yhot)
+{
+    return GLFW_TRUE;
+}
 
 void _glfwShowWindowNull(_GLFWwindow* window)
 {
