@@ -540,7 +540,7 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
         {
         case WM_NCCREATE:
         {
-            if (_glfwIsWindows10AnniversaryUpdateOrGreaterWin32())
+            if (_glfwIsWindows10Version1607OrGreaterWin32())
             {
                 const CREATESTRUCTW* cs = (const CREATESTRUCTW*)lParam;
                 const _GLFWwndconfig* wndconfig = cs->lpCreateParams;
@@ -1323,19 +1323,11 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
         case WM_ACTIVATE:
         {
-            if (window->titlebar)
+            if (_glfw.hints.window.titlebar)
                 break;
 
-            // Extend the frame into the client area.
-            MARGINS margins = { 0 };
-            auto hr = DwmExtendFrameIntoClientArea(hWnd, &margins);
-
-            if (!SUCCEEDED(hr))
-            {
-                // Handle the error.
-            }
-
-            break;
+            RECT title_bar_rect = { 0 };
+            InvalidateRect(hWnd, &title_bar_rect, FALSE);
         }
         case WM_NCHITTEST:
         {

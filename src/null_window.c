@@ -453,9 +453,9 @@ void _glfwPlatformSetWindowDecorated(_GLFWwindow* window, GLFWbool enabled)
 {
 }
 
-void _glfwPlatformSetWindowTitlebar(_GLFWwindow* window, GLFWbool enabled)
-{
-}
+//void _glfwPlatformSetWindowTitlebar(_GLFWwindow* window, GLFWbool enabled)
+//{
+//}
 
 void _glfwPlatformSetWindowFloating(_GLFWwindow* window, GLFWbool enabled)
 {
