@@ -2086,13 +2086,6 @@ void _glfwPlatformSetWindowTitlebar(_GLFWwindow* window, GLFWbool enabled)
     updateWindowStyles(window);
 }
 
-void _glfwSetWindowFloatingWin32(_GLFWwindow* window, GLFWbool enabled)
-{
-    const HWND after = enabled ? HWND_TOPMOST : HWND_NOTOPMOST;
-    SetWindowPos(window->win32.handle, after, 0, 0, 0, 0,
-                 SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-}
-
 void _glfwSetWindowMousePassthroughWin32(_GLFWwindow* window, GLFWbool enabled)
 {
     COLORREF key = 0;
