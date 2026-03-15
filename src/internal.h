@@ -406,6 +406,7 @@ struct _GLFWwndconfig
     bool          resizable;
     bool          visible;
     bool          decorated;
+    bool          titlebar;
     bool          focused;
     bool          autoIconify;
     bool          floating;
@@ -566,6 +567,7 @@ struct _GLFWwindow
 
     struct {
         GLFWwindowposfun          pos;
+        GLFWtitlebarhittestfun    titlebarHitTest;
         GLFWwindowsizefun         size;
         GLFWwindowclosefun        close;
         GLFWwindowrefreshfun      refresh;
@@ -752,6 +754,10 @@ struct _GLFWplatform
     void (*waitEvents)(void);
     void (*waitEventsTimeout)(double);
     void (*postEmptyEvent)(void);
+
+    // nyx
+    void (*setWindowTitlebar)(_GLFWwindow*,GLFWbool);
+
     // EGL
     EGLenum (*getEGLPlatform)(EGLint**);
     EGLNativeDisplayType (*getEGLNativeDisplay)(void);
@@ -922,6 +928,7 @@ GLFWproc _glfwPlatformGetModuleSymbol(void* module, const char* name);
 void _glfwInputWindowFocus(_GLFWwindow* window, GLFWbool focused);
 void _glfwInputWindowPos(_GLFWwindow* window, int xpos, int ypos);
 void _glfwInputWindowSize(_GLFWwindow* window, int width, int height);
+void _glfwInputTitlebarHitTest(_GLFWwindow* window, int posX, int posY, int* hit);
 void _glfwInputFramebufferSize(_GLFWwindow* window, int width, int height);
 void _glfwInputWindowContentScale(_GLFWwindow* window,
                                   float xscale, float yscale);
