@@ -1331,47 +1331,44 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
             POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
             ScreenToClient(hWnd, &pt);
+
             RECT rc;
             GetClientRect(hWnd, &rc);
+
+            enum
+            {
+                left = 1,
+                top = 2,
+                right = 4,
+                bottom = 8
+            };
+
+            int hit = 0;
+            if (pt.x < border_thickness.left)
+                hit |= left;
+            if (pt.x >= rc.right - border_thickness.right)
+                hit |= right;
+            if (pt.y < border_thickness.top)
+                hit |= top;
+            if (pt.y >= rc.bottom - border_thickness.bottom)
+                hit |= bottom;
+
+            if (hit & top && hit & left)      return HTTOPLEFT;
+            if (hit & top && hit & right)     return HTTOPRIGHT;
+            if (hit & bottom && hit & left)   return HTBOTTOMLEFT;
+            if (hit & bottom && hit & right)  return HTBOTTOMRIGHT;
+            if (hit & left)                   return HTLEFT;
+            if (hit & top)                    return HTTOP;
+            if (hit & right)                  return HTRIGHT;
+            if (hit & bottom)                 return HTBOTTOM;
 
             int titlebarHitTest = 0;
             _glfwInputTitlebarHitTest(window, pt.x, pt.y, &titlebarHitTest);
 
             if (titlebarHitTest)
-            {
                 return HTCAPTION;
-            }
-            else
-            {
-                enum
-                {
-                    left   = 1,
-                    top    = 2, 
-                    right  = 4,
-                    bottom = 8
-                };
 
-                int hit = 0;
-                if (pt.x < border_thickness.left)
-                    hit |= left;
-                if (pt.x > rc.right - border_thickness.right)
-                    hit |= right;
-                if (pt.y < border_thickness.top)
-                    hit |= top;
-                if (pt.y > rc.bottom - border_thickness.bottom)
-                    hit |= bottom;
-
-                if (hit & top && hit & left)      return HTTOPLEFT;
-                if (hit & top && hit & right)     return HTTOPRIGHT;
-                if (hit & bottom && hit & left)   return HTBOTTOMLEFT;
-                if (hit & bottom && hit & right)  return HTBOTTOMRIGHT;
-                if (hit & left)                   return HTLEFT;
-                if (hit & top)                    return HTTOP;
-                if (hit & right)                  return HTRIGHT;
-                if (hit & bottom)                 return HTBOTTOM;
-
-                return HTCLIENT;
-            }
+            return HTCLIENT;
         }
     }
 
