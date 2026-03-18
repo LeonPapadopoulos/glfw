@@ -531,7 +531,7 @@ static void maximizeWindowManually(_GLFWwindow* window)
 //
 static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    static RECT border_thickness;
+    static RECT border_thickness = { 4, 4, 4, 4 };
 
     _GLFWwindow* window = GetPropW(hWnd, L"GLFW");
     if (!window)
