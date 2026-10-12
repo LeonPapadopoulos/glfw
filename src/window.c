@@ -235,6 +235,7 @@ GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height,
     window->monitor          = (_GLFWmonitor*) monitor;
     window->resizable        = wndconfig.resizable;
     window->decorated        = wndconfig.decorated;
+    window->titlebar         = wndconfig.titlebar;
     window->autoIconify      = wndconfig.autoIconify;
     window->floating         = wndconfig.floating;
     window->focusOnShow      = wndconfig.focusOnShow;
@@ -918,7 +919,7 @@ GLFWAPI int glfwGetWindowAttrib(GLFWwindow* handle, int attrib)
         case GLFW_DECORATED:
             return window->decorated;
         case GLFW_TITLEBAR:
-            return _glfw.hints.window.titlebar;
+            return window->titlebar;
         case GLFW_FLOATING:
             return window->floating;
         case GLFW_AUTO_ICONIFY:
@@ -981,10 +982,10 @@ GLFWAPI void glfwSetWindowAttrib(GLFWwindow* handle, int attrib, int value)
             return;
 
         case GLFW_TITLEBAR:
-            if (_glfw.hints.window.titlebar == value)
+            if (window->titlebar == value)
                 return;
 
-            _glfw.hints.window.titlebar = value;
+            window->titlebar = value;
             if (!window->monitor)
                 _glfw.platform.setWindowTitlebar(window, value);
             return;

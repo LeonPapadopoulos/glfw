@@ -527,6 +527,14 @@ static void maximizeWindowManually(_GLFWwindow* window)
                  SWP_NOACTIVATE | SWP_NOZORDER | SWP_FRAMECHANGED);
 }
 
+// Returns whether the window replaces the default titlebar with its own, keeping
+// the frame's resize borders; an undecorated window has no frame to replace
+//
+static GLFWbool hasCustomTitlebar(const _GLFWwindow* window)
+{
+    return window->decorated && !window->titlebar;
+}
+
 // Window procedure for user-created windows
 //
 static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -559,7 +567,7 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
     {
         case WM_CREATE:
         {
-            if (_glfw.hints.window.titlebar)
+            if (!hasCustomTitlebar(window))
                 break;
 
             // find border thickness
@@ -1052,7 +1060,7 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
         case WM_NCCALCSIZE:
         {
-            if (_glfw.hints.window.titlebar)
+            if (!hasCustomTitlebar(window))
                 break;
 
             if (lParam)
@@ -1309,7 +1317,7 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
         case WM_ACTIVATE:
         {
-            if (_glfw.hints.window.titlebar)
+            if (!hasCustomTitlebar(window))
                 break;
 
             // Extend the frame into the client area.
@@ -1326,7 +1334,7 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
         case WM_NCHITTEST:
         {
-            if (_glfw.hints.window.titlebar)
+            if (!hasCustomTitlebar(window))
                 break;
 
             POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
