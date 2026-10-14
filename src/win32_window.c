@@ -1064,7 +1064,20 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
                 break;
 
             if (lParam)
+            {
+                // Windows places a maximized window's frame beyond the monitor's edges;
+                // without a non-client area, the client area would lie there too, cut
+                // off at all four sides. Keep it within the monitor's work area.
+                if (IsZoomed(hWnd))
+                {
+                    NCCALCSIZE_PARAMS* params = (NCCALCSIZE_PARAMS*) lParam;
+                    MONITORINFO mi = { sizeof(mi) };
+                    if (GetMonitorInfoW(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST), &mi))
+                        IntersectRect(&params->rgrc[0], &params->rgrc[0], &mi.rcWork);
+                }
+
                 return 0;
+            }
 
             break;
         }
@@ -1351,15 +1364,20 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
                 bottom = 8
             };
 
+            // A maximized window doesn't resize, so its edges have no resize borders:
+            // they belong to the titlebar and the client area
             int hit = 0;
-            if (pt.x < border_thickness.left)
-                hit |= left;
-            if (pt.x >= rc.right - border_thickness.right)
-                hit |= right;
-            if (pt.y < border_thickness.top)
-                hit |= top;
-            if (pt.y >= rc.bottom - border_thickness.bottom)
-                hit |= bottom;
+            if (!IsZoomed(hWnd))
+            {
+                if (pt.x < border_thickness.left)
+                    hit |= left;
+                if (pt.x >= rc.right - border_thickness.right)
+                    hit |= right;
+                if (pt.y < border_thickness.top)
+                    hit |= top;
+                if (pt.y >= rc.bottom - border_thickness.bottom)
+                    hit |= bottom;
+            }
 
             if (hit & top && hit & left)      return HTTOPLEFT;
             if (hit & top && hit & right)     return HTTOPRIGHT;
